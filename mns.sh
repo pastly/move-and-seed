@@ -321,8 +321,7 @@ postwork() {
 			[[ "$THERE" == /* ]] && MOVEDFILE="$THERE/$FILE" || MOVEDFILE="$(pwd)/$THERE/$FILE"
 			
 			# clean up $MOVEDFILE (probably contains /./ and // in places)
-			MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/./|/|g')
-			MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|//|/|g')
+			MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
 			
 			# get into $HERE
 			pushd "$HERE" > /dev/null
