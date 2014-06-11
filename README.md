@@ -1,11 +1,10 @@
 # INTRO
 
-This is a handy little script that allows you to move torrented files around
-without disrupting your ability to seed them.
+This is a handy little bash script that allows you to move torrented files around without disrupting your ability to seed them.
 
 Please report bugs at the [issue tracker](https://bitbucket.org/pointychimp/move-and-seed/issues).
 
-If you like this and find it useful, consider sending a few bitcents my way: [17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7](bitcoin:17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7).
+If you like this and find it useful, consider sending a few bitcents my way: 17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7.
 
 # USAGE
 
