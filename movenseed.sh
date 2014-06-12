@@ -327,7 +327,7 @@ postwork() {
 			pushd "$HERE" > /dev/null
 
 			# make sure the directory exists for $SEEDFILE
-			[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p $(dirname "$SEEDFILE")
+			[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
 			
 			# link to the $MOVEDFILE with $SEEDFILE
 			ln -s "$MOVEDFILE" "$SEEDFILE"
