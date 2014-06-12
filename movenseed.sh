@@ -302,14 +302,14 @@ postwork() {
 		# a file somewhere deep down in $THERE.
 
 		# contains hash of a file in $THERE
-		HASH=$( $HASHFUNCTION "$FILE" | awk '{print $1}' )
+		HASH=$( $HASHFUNCTION "$FILE" | cut --delimiter=" " --fields="1" )
 
 		# change to original location
 		popd > /dev/null
 
 		# try to find $FILE's $HASH in $SUMSFILE
 		# and extract seeding file's name if found
-		SEEDFILE=$( grep "$HASH" "$SUMSFILE" | awk '{print $2}' )
+		SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="2-" )
 		
 		# if found, link the files together
 		if [[ -n "$SEEDFILE" ]]; then
