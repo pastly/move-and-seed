@@ -59,12 +59,12 @@ reorganizing them elsewhere on the computer.
 
 The commands are as follows.
 
-$(basename $0) example
+$(basename "$0") example
              Prints out a full example of how this script
              can be used. It pipes the text through \"less\"
              as there is a lot.
 
-$(basename $0) prework <dir>
+$(basename "$0") prework <dir>
 			 This should be run before moving.
 
 			 Recursively hashes all the files in <dir>.
@@ -72,7 +72,7 @@ $(basename $0) prework <dir>
 			 all the hashes. This will take a long time
 			 for large directories!
 
-$(basename $0) postwork <dir1> <dir2>
+$(basename "$0") postwork <dir1> <dir2>
 			 This should be run after moving and can be run
 			 multiple times for multiple <dir2>'s.
 
@@ -125,9 +125,9 @@ The download has finished and you have the following directory structure.
 └── see-us-at-venue.txt
 
 From inside /downloads/free-artist-discography, you will run
-	$(basename $0) prework ./
+	$(basename "$0") prework ./
 Or from anywhere you will run
-	$(basename $0) prework /downloads/free-artist-discography
+	$(basename "$0") prework /downloads/free-artist-discography
 
 Once finished (this could take a long time if the albums are very large), a new
 file will be in /downloads/free-artist-discography containing a list of all the
@@ -183,11 +183,11 @@ You should now this script twice, once for each of the directories you moved
 files to. 
 
 From /downloading/free-artist-discography you run
-	$(basename $0) postwork ./ /my-music/free-artist
-	$(basename $0) postwork ./ /public/free-artist
+	$(basename "$0") postwork ./ /my-music/free-artist
+	$(basename "$0") postwork ./ /public/free-artist
 Or from anywhere you run
-	$(basename $0) postwork /downloading/free-artist-discography /my-music/free-artist
-	$(basename $0) postwork /downloading/free-artist-discography /public/free-artist
+	$(basename "$0") postwork /downloading/free-artist-discography /my-music/free-artist
+	$(basename "$0") postwork /downloading/free-artist-discography /public/free-artist
 
 Inside /downloading/free-artist-discography you should now have symbolic links
 pointing towards all those .mp3 files, even though you changed the directory
@@ -230,7 +230,7 @@ files as possible to avoid having to digest files that aren't related to the
 torrent. Using the above example, if you have lots of other artists in the
 /my-music directory, you would not want to use
 	
-	$(basename $0) /downloading/free-artist-discography /my-music
+	$(basename "$0") /downloading/free-artist-discography /my-music
 
 as it would digest ever single file in /my-music and potentially take forever.
 Similarly, if you put the torrented music files in the same directory as
@@ -262,7 +262,7 @@ prework() {
 		# $HERE = /home/user
 		# $FILE = ./Downloads/movie.mkv (which absolutely is /home/user/Downloads/movie.mkv)
 
-		echo -n "hashing $(basename $FILE) ... "
+		echo -n "hashing $(basename "$FILE") ... "
 		$HASHFUNCTION "$FILE" >> "$SUMSFILE"
 		echo "done!"
 	done
@@ -277,7 +277,7 @@ When you are done, come back to this directory and
 run the following command once for each <dir2> needed until
 all the files are symbolically linked.
 
-	$(basename $0) postwork $HERE <dir2>
+	$(basename "$0") postwork $HERE <dir2>
 "
 
 	# finally, move back to wherever we were before starting
@@ -295,7 +295,7 @@ postwork() {
 	find . -type f -fprint /dev/stdout \
 	| while read FILE; do
 
-		echo -n "Checking $(basename $FILE) ... "
+		echo -n "Checking $(basename "$FILE") ... "
 
 		# at this point, we are sitting in $THERE
 		# and $FILE contains the relative path to 
@@ -335,7 +335,7 @@ postwork() {
 			# go back to original location
 			popd > /dev/null
 
-			echo "$(basename $SEEDFILE) now points to $(basename $MOVEDFILE)"
+			echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
 
 		else
 			echo "no"
