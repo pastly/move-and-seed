@@ -309,7 +309,9 @@ postwork() {
 
 		# try to find $FILE's $HASH in $SUMSFILE
 		# and extract seeding file's name if found
-		SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="2-" )
+		# use third field to end: second field is a second space
+		# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
+		SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
 		
 		# if found, link the files together
 		if [[ -n "$SEEDFILE" ]]; then
