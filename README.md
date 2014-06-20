@@ -18,12 +18,12 @@ reorganizing them elsewhere on the computer.
 
 The commands are as follows.
 
-	./mns.sh example
+	./movenseed.sh example
 	             Prints out a full example of how this script
 	             can be used. It pipes the text through "less"
 	             as there is a lot.
 
-	./mns.sh prework <dir>
+	./movenseed.sh prework <dir>
 				 This should be run before moving.
 
 				 Recursively hashes all the files in <dir>.
@@ -31,7 +31,7 @@ The commands are as follows.
 				 all the hashes. This will take a long time
 				 for large directories!
 
-	./mns.sh postwork <dir1> <dir2>
+	./movenseed.sh postwork <dir1> <dir2>
 				 This should be run after moving and can be run
 				 multiple times for multiple <dir2>'s.
 
@@ -84,11 +84,11 @@ The download has finished and you have the following directory structure.
 You need to copy the script to wherever you will be using it. From inside
 `/downloads/free-artist-discography`, you will run
 	
-	./mns.sh prework ./
+	./movenseed.sh prework ./
 
 Or from anywhere you will run
 	
-	./mns.sh prework /downloads/free-artist-discography
+	./movenseed.sh prework /downloads/free-artist-discography
 
 Once finished (this could take a long time if the albums are very large), a new
 file will be in `/downloads/free-artist-discography` containing a list of all the
@@ -145,13 +145,13 @@ moved files to.
 
 From `/downloading/free-artist-discography` you run
 
-	./mns.sh postwork ./ /my-music/free-artist
-	./mns.sh postwork ./ /public/free-artist
+	./movenseed.sh postwork ./ /my-music/free-artist
+	./movenseed.sh postwork ./ /public/free-artist
 
 Or from anywhere you run
 
-	./mns.sh postwork /downloading/free-artist-discography /my-music/free-artist
-	./mns.sh postwork /downloading/free-artist-discography /public/free-artist
+	./movenseed.sh postwork /downloading/free-artist-discography /my-music/free-artist
+	./movenseed.sh postwork /downloading/free-artist-discography /public/free-artist
 
 Inside `/downloading/free-artist-discography` you should now have symbolic links
 pointing towards all those .mp3 files, even though you changed the directory
@@ -194,10 +194,10 @@ files as possible to avoid having to digest files that aren't related to the
 torrent. Using the above example, if you have lots of other artists in the
 `/my-music` directory, you would not want to use
 	
-	./mns.sh /downloading/free-artist-discography /my-music
+	./movenseed.sh /downloading/free-artist-discography /my-music
 
 as it would digest ever single file in `/my-music` and potentially take forever.
 Similarly, if you put the torrented music files in the same directory as
 unrelated files, you will end up digesting the unrelated files. There's nothing
 wrong with this, other than you will have an unavoidable waste of time if there
-is lots of large unrelated files. 
+is lots of large unrelated files.
