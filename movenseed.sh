@@ -25,6 +25,12 @@
 # sha1sum would be another good option, but performed
 # slower for me in my cursory tests
 HASHFUNCTION="md5sum" 
+### $FILESIZEFUNCTION
+#
+# command that calculates the filesize of the given file
+# unknown reliability, I imagine it may cause issues on
+# filesystems with compression and similar things
+FILESIZEFUNCTION="stat --format='%s %n'"
 ### $COMMAND
 #
 # "prework"       or
@@ -244,11 +250,13 @@ prework() {
 	# change to the directory we are supposed to be working in
 	pushd "$HERE" > /dev/null
 
-	# file to hold all the sums
-	# This will always be an absolute path
+	# files to hold all the sums and file sizes
+	# These will always be absolute paths
 	SUMSFILE="$(pwd)/mns.sums"
-	# remove $SUMEFILE if it exists
+	FILESIZEFILE="$(pwd)/mns.sizes"
+	# remove files if the exist
 	[[ -f "$SUMSFILE" ]] && rm "$SUMSFILE"
+	[[ -f "$FILESIZEFILE" ]] && rm "$FILESIZEFILE"
 
 	# iterate for each file found anywhere all the way down
 	find . -type f -fprint /dev/stdout \
@@ -262,13 +270,18 @@ prework() {
 		# $HERE = /home/user
 		# $FILE = ./Downloads/movie.mkv (which absolutely is /home/user/Downloads/movie.mkv)
 
+		echo "finding filesize of $(basename "$FILE")"
+		eval $FILESIZEFUNCTION \"$FILE\" >> "$FILESIZEFILE"
+
 		echo -n "hashing $(basename "$FILE") ... "
-		$HASHFUNCTION "$FILE" >> "$SUMSFILE"
+		eval $HASHFUNCTION \"$FILE\" >> "$SUMSFILE"
 		echo "done!"
 	done
 
 	echo "
-Everything in $HERE is now digested and stored in $HERE/mns.sums
+Everything in $HERE is now digested and info is stored in
+$HERE/mns.sums
+$HERE/mns.sizes
 
 You can now move whatever files you want out of here to wherever you want.
 Any files you do not want to keep should stay in this directory.
@@ -285,9 +298,11 @@ all the files are symbolically linked.
 }
 
 postwork() {
-	# the file where sums should be stored
+	# the files where sums and filesizes should be stored
 	SUMSFILE="$HERE/mns.sums"
-	[[ ! -f "$SUMSFILE" ]] && echo "Error: $HERE/mns.sums doesn't exist" && exit 1
+	FILESIZEFILE="$HERE/mns.sizes"
+	[[ ! -f "$SUMSFILE" ]]     && echo "Error: $HERE/mns.sums doesn't exist"  && exit 1
+	[[ ! -f "$FILESIZEFILE" ]] && echo "Error: $HERE/mns.sizes doesn't exist" && exit 1
 
 	# change to directory where moved files are
 	pushd "$THERE" > /dev/null
@@ -301,54 +316,72 @@ postwork() {
 		# and $FILE contains the relative path to 
 		# a file somewhere deep down in $THERE.
 
-		# contains hash of a file in $THERE
-		HASH=$( $HASHFUNCTION "$FILE" | cut --delimiter=" " --fields="1" )
+		# contains filesize of a file in $THERE
+		FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
 
 		# change to original location
 		popd > /dev/null
 
-		# try to find $FILE's $HASH in $SUMSFILE
-		# and extract seeding file's name if found
-		# use third field to end: second field is a second space
-		# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
-		SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
+		# try to find $FILE's $FILESIZE in $FILESIZEFILE
+		# if it isn't found, skip hashing because $FILE
+		# must not be something interesting
+		# possible limitaion: fancy filesystems
+		MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
 		
-		# if found, link the files together
-		if [[ -n "$SEEDFILE" ]]; then
+		if [[ "$MATCHES" > "0" ]]; then
 
-			echo -n "yes! "
+			pushd "$THERE" > /dev/null
 
-			# calculate absolute path to $MOVEDFILE
-			# if $THERE starts with a slash, do first thing, else do second
-			[[ "$THERE" == /* ]] && MOVEDFILE="$THERE/$FILE" || MOVEDFILE="$(pwd)/$THERE/$FILE"
-			
-			# clean up $MOVEDFILE (probably contains /./ and // in places)
-			MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
-			
-			# get into $HERE
-			pushd "$HERE" > /dev/null
+			# contains hash of a file in $THERE
+			HASH=$( eval $HASHFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
 
-			# make sure the directory exists for $SEEDFILE
-			[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
-			
-			# link to the $MOVEDFILE with $SEEDFILE
-			ln -s "$MOVEDFILE" "$SEEDFILE"
-			
-			# go back to original location
+			# change to original location
 			popd > /dev/null
 
-			echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
+			# try to find $FILE's $HASH in $SUMSFILE
+			# and extract seeding file's name if found
+			# use third field to end: second field is a second space
+			# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
+			SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
+
+			# if found, link the files together
+			if [[ -n "$SEEDFILE" ]]; then
+
+				echo -n "yes! "
+
+				# calculate absolute path to $MOVEDFILE
+				# if $THERE starts with a slash, do first thing, else do second
+				[[ "$THERE" == /* ]] && MOVEDFILE="$THERE/$FILE" || MOVEDFILE="$(pwd)/$THERE/$FILE"
+
+				# clean up $MOVEDFILE (probably contains /./ and // in places)
+				MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
+
+				# get into $HERE
+				pushd "$HERE" > /dev/null
+
+				# make sure the directory exists for $SEEDFILE
+				[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
+
+				# link to the $MOVEDFILE with $SEEDFILE
+				ln -s "$MOVEDFILE" "$SEEDFILE"
+
+				# go back to original location
+				popd > /dev/null
+
+				echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
+
+			else
+				echo "no (hash)"
+			fi
 
 		else
-			echo "no"
+			echo "no (filesize)"
 		fi
-		
+
 		# then go back to $THERE
 		pushd "$THERE" > /dev/null
 
-
 	done
-
 
 	# finally, move back to wherever we were before starting
 	popd > /dev/null
