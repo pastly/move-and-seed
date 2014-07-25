@@ -35,371 +35,263 @@ FILESIZEFUNCTION="stat --format='%s %n'"
 #
 # "prework"       or
 # "postwork"            command for what part of the script to run
-COMMAND="$1"
+COMMAND=""
 ### $HERE
 #
 # /absolute/path  or
 # ./relative/path or
 # relative/path         top level directory for seeding files
-#                       used for both commands
-HERE="$2"
+HERE=""
 ### $THERE
 #
 # /absolute/path  or
 # ./relative/path or
 # relative/path         top level directory for organized files
-#                       only used for postwork command
-THERE="$3"
+THERE=""
+### $SKIPFILESIZECHECK
+#
+# true or false			whether or not filesize should be checked
+SKIPFILESIZECHECK=false
+### $VERBOSE
+#
+# true or false			whether or not to diplay lots of information
+VERBOSE=true
 
 ############# start of script #############
 
 usage() {
-	echo "
-This script will help you symbolically link files after moving/renaming
-back into the directory you torrenting them into for continued seeding.
-It should be run before you move/rename, and then once again afterwards.
+	cat <<-endofHEREdocument
+	This script will help you symbolically link files after moving/renaming 
+	back into the directory you torrenting them into for continued seeding. It
+	should be run before you move/rename, and then once again afterwards.
 
-The inspiration for this script came from torrenting lots of Linux ISOs
-and wanting to continue seeding and supporting them while also 
-reorganizing them elsewhere on the computer.
+	Usage:
+	$0 --prework [ -h|--here PATH ]
+	$0 --postwork [ -h|--here PATH ] [ -t|--there PATH ]
 
-The commands are as follows.
+	--here and --there may be specified many times
 
-$(basename "$0") example
-             Prints out a full example of how this script
-             can be used. It pipes the text through \"less\"
-             as there is a lot.
-
-$(basename "$0") prework <dir>
-			 This should be run before moving.
-
-			 Recursively hashes all the files in <dir>.
-			 A file in <dir> will be created containing
-			 all the hashes. This will take a long time
-			 for large directories!
-
-$(basename "$0") postwork <dir1> <dir2>
-			 This should be run after moving and can be run
-			 multiple times for multiple <dir2>'s.
-
-			 Here, <dir1> should be the same as <dir> from 
-			 prework. <dir2> should be where things were   
-			 moved. <dir1> can still contain anything you  
-			 didn't want to move and must contain that hash 
-			 file generated in the prework.
-"
-}
-
-example() {
-	echo "
-Your torrented a discography for an artist that released all their work for
-free. You want to continuing supporting the artist by seeding for a long time,
-but don't like the way they organized the files or included a bunch of annoying 
-text files. You also want to save space, so having two copies of the music--one
-for listening, one for seeding--is not ideal. 
-
-================================= PREPARATION =================================
-
-The download has finished and you have the following directory structure.
-
-/downloads/free-artist-discography
-├── album1
-│   ├── cover.jpg
-│   ├── song1.mp3
-│   ├── song2.mp3
-│   ├── song3.mp3
-│   └── track-list.txt
-├── album2
-│   ├── cover.jpg
-│   ├── song1.mp3
-│   ├── song2.mp3
-│   ├── song3.mp3
-│   └── track-list.txt
-├── album3
-│   ├── cd1
-│   │   ├── song1.mp3
-│   │   ├── song2.mp3
-│   │   └── song3.mp3
-│   ├── cd2
-│   │   ├── song1.mp3
-│   │   ├── song2.mp3
-│   │   └── song3.mp3
-│   ├── cover.jpg
-│   └── track-list.txt
-├── another-txt-file.txt
-├── readme.txt
-└── see-us-at-venue.txt
-
-From inside /downloads/free-artist-discography, you will run
-	$(basename "$0") prework ./
-Or from anywhere you will run
-	$(basename "$0") prework /downloads/free-artist-discography
-
-Once finished (this could take a long time if the albums are very large), a new
-file will be in /downloads/free-artist-discography containing a list of all the
-files and their hashes. You are now free to move any of the files and folders 
-to whever you want on the filesystem. 
-
-Let's say you personally like album1 and album2, so you put it in a directory
-to be later synced with your mp3 player. Album3 isn't so good, but your
-brother has bad taste in music so he likes it. You put it in a public folder so
-he can access it.
-
-================================== POST WORK ==================================
-
-You've finished moving things and relevant directories look like this now.
-
-/downloads/free-artist-discography
-├── album1
-│   ├── cover.jpg
-│   └── track-list.txt
-├── album2
-│   ├── cover.jpg
-│   └── track-list.txt
-├── album3
-│   ├── cover.jpg
-│   └── track-list.txt
-├── another-txt-file.txt
-├── mns.sums
-├── readme.txt
-└── see-us-at-venue.txt
-
-/my-music
-└── free-artist
-    ├── album1 [year]
-    │   ├── artist-album-song1.mp3
-    │   ├── artist-album-song2.mp3
-    │   └── artist-album-song3.mp3
-    └── album2 [year]
-        ├── artist-album-song1.mp3
-        ├── artist-album-song2.mp3
-        └── artist-album-song3.mp3
-
-/public/free-artist
-├── album3 disc1
-│   ├── song1.mp3
-│   ├── song2.mp3
-│   └── song3.mp3
-└── album3 disc2
-    ├── song1.mp3
-    ├── song2.mp3
-    └── song3.mp3
-
-You should now this script twice, once for each of the directories you moved
-files to. 
-
-From /downloading/free-artist-discography you run
-	$(basename "$0") postwork ./ /my-music/free-artist
-	$(basename "$0") postwork ./ /public/free-artist
-Or from anywhere you run
-	$(basename "$0") postwork /downloading/free-artist-discography /my-music/free-artist
-	$(basename "$0") postwork /downloading/free-artist-discography /public/free-artist
-
-Inside /downloading/free-artist-discography you should now have symbolic links
-pointing towards all those .mp3 files, even though you changed the directory
-structure and even renamed some of them.
-
-/downloads/free-artist-discography
-├── album1
-│   ├── cover.jpg
-│   ├── song1.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song1.mp3
-│   ├── song2.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song2.mp3
-│   ├── song3.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song3.mp3
-│   └── track-list.txt
-├── album2
-│   ├── cover.jpg
-│   ├── song1.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song1.mp3
-│   ├── song2.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song2.mp3
-│   ├── song3.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song3.mp3
-│   └── track-list.txt
-├── album3
-│   ├── cd1
-│   │   ├── song1.mp3 -> /public/free-artist/album3 disc1/song1.mp3
-│   │   ├── song2.mp3 -> /public/free-artist/album3 disc1/song2.mp3
-│   │   └── song3.mp3 -> /public/free-artist/album3 disc1/song3.mp3
-│   ├── cd2
-│   │   ├── song1.mp3 -> /public/free-artist/album3 disc2/song1.mp3
-│   │   ├── song2.mp3 -> /public/free-artist/album3 disc2/song2.mp3
-│   │   └── song3.mp3 -> /public/free-artist/album3 disc2/song3.mp3
-│   ├── cover.jpg
-│   └── track-list.txt
-├── another-txt-file.txt
-├── mns.sums
-├── readme.txt
-└── see-us-at-venue.txt
-
-=============================== WORD OF WARNING ===============================
-
-This script works by matching hashes; therefore, you need to be careful about
-which directories you choose for the post work. You want to get as close to the
-files as possible to avoid having to digest files that aren't related to the
-torrent. Using the above example, if you have lots of other artists in the
-/my-music directory, you would not want to use
-	
-	$(basename "$0") /downloading/free-artist-discography /my-music
-
-as it would digest ever single file in /my-music and potentially take forever.
-Similarly, if you put the torrented music files in the same directory as
-unrelated files, you will end up digesting the unrelated files. There's nothing
-wrong with this, other than you will have an unavoidable waste of time if there
-is lots of large unrelated files. 
-"
+	All options:
+	--help --usage ..... this text
+	--prework .......... indicate prework stage
+	--postwork ......... indicate postwork stage
+	-h --here .......... any type of path, seeding directory
+	-t --there ......... any type of path, organized directory
+	--no-filesize ...... disable filesize checks in postwork
+	                     may be needed for cross-filesystem work
+	-v --verbose ....... output lots of words (default)
+	-q --quiet   ....... supress everything but warnings
+	endofHEREdocument
 }
 
 prework() {
-	# change to the directory we are supposed to be working in
-	pushd "$HERE" > /dev/null
+	oldIFS="$IFS"
+	IFS=":"
+	read -a HERE <<< "$HERE"
+	IFS="$oldIFS"
 
-	# files to hold all the sums and file sizes
-	# These will always be absolute paths
-	SUMSFILE="$(pwd)/mns.sums"
-	FILESIZEFILE="$(pwd)/mns.sizes"
-	# remove files if the exist
-	[[ -f "$SUMSFILE" ]] && rm "$SUMSFILE"
-	[[ -f "$FILESIZEFILE" ]] && rm "$FILESIZEFILE"
+	for h in ${HERE[@]}; do 
 
-	# iterate for each file found anywhere all the way down
-	find . -type f -fprint /dev/stdout \
-	| while read FILE; do 
+		[[ ! -d "$h" ]] \
+			&& echo "Warning: $h is not a directory. Ignoring it and moving on." \
+			&& continue
 
-		# at this point, we are sitting in $HERE
-		# and $FILE contains the relative path to 
-		# a file somewhere deep down in $HERE.
+		# change to the directory we are supposed to be working in
+		pushd "$h" > /dev/null
 
-		# example:
-		# $HERE = /home/user
-		# $FILE = ./Downloads/movie.mkv (which absolutely is /home/user/Downloads/movie.mkv)
+		# files to hold all the sums and file sizes
+		# These will always be absolute paths
+		SUMSFILE="$(pwd)/mns.sums"
+		FILESIZEFILE="$(pwd)/mns.sizes"
+		# remove files if the exist
+		[[ -f "$SUMSFILE" ]] && rm "$SUMSFILE"
+		[[ -f "$FILESIZEFILE" ]] && rm "$FILESIZEFILE"
 
-		echo "finding filesize of $(basename "$FILE")"
-		eval $FILESIZEFUNCTION \"$FILE\" >> "$FILESIZEFILE"
+		# iterate for each file found anywhere all the way down
+		find . -type f -fprint /dev/stdout \
+		| while read FILE; do 
 
-		echo -n "hashing $(basename "$FILE") ... "
-		eval $HASHFUNCTION \"$FILE\" >> "$SUMSFILE"
-		echo "done!"
+			# at this point, we are sitting in $h
+			# and $FILE contains the relative path to 
+			# a file somewhere deep down in $h.
+
+			# example:
+			# $h = /home/user
+			# $FILE = ./Downloads/movie.mkv (which absolutely is /home/user/Downloads/movie.mkv)
+
+			[[ $VERBOSE == true ]] && echo "finding filesize of $(basename "$FILE")"
+			eval $FILESIZEFUNCTION \"$FILE\" >> "$FILESIZEFILE"
+
+			[[ $VERBOSE == true ]] && echo -n "hashing $(basename "$FILE") ... "
+			eval $HASHFUNCTION \"$FILE\" >> "$SUMSFILE"
+			[[ $VERBOSE == true ]] && echo "done!"
+		done
+
 	done
-
-	echo "
-Everything in $HERE is now digested and info is stored in
-$HERE/mns.sums
-$HERE/mns.sizes
-
-You can now move whatever files you want out of here to wherever you want.
-Any files you do not want to keep should stay in this directory.
-
-When you are done, come back to this directory and
-run the following command once for each <dir2> needed until
-all the files are symbolically linked.
-
-	$(basename "$0") postwork $HERE <dir2>
-"
 
 	# finally, move back to wherever we were before starting
 	popd > /dev/null
 }
 
 postwork() {
-	# the files where sums and filesizes should be stored
-	SUMSFILE="$HERE/mns.sums"
-	FILESIZEFILE="$HERE/mns.sizes"
-	[[ ! -f "$SUMSFILE" ]]     && echo "Error: $HERE/mns.sums doesn't exist"  && exit 1
-	[[ ! -f "$FILESIZEFILE" ]] && echo "Error: $HERE/mns.sizes doesn't exist" && exit 1
+	oldIFS="$IFS"
+	IFS=":"
+	read -a HERE <<< "$HERE"
+	read -a THERE <<< "$THERE"
+	IFS="$oldIFS"
 
-	# change to directory where moved files are
-	pushd "$THERE" > /dev/null
+	for h in ${HERE[@]}; do 
 
-	find . -type f -fprint /dev/stdout \
-	| while read FILE; do
+		for t in ${THERE[@]}; do
 
-		echo -n "Checking $(basename "$FILE") ... "
+			# the files where sums and filesizes should be stored
+			SUMSFILE="$h/mns.sums"
+			FILESIZEFILE="$h/mns.sizes"
+			[[ ! -f "$SUMSFILE" ]]     && echo "Warning: $h/mns.sums doesn't exist, skipping directory"  && continue
+			[[ ! -f "$FILESIZEFILE" ]] && echo "Warning: $h/mns.sizes doesn't exist, skipping directory" && continue
 
-		# at this point, we are sitting in $THERE
-		# and $FILE contains the relative path to 
-		# a file somewhere deep down in $THERE.
+			# change to directory where moved files are
+			pushd "$t" > /dev/null
 
-		# contains filesize of a file in $THERE
-		FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
+			find . -type f -fprint /dev/stdout \
+			| while read FILE; do
 
-		# change to original location
-		popd > /dev/null
+				[[ $VERBOSE == true ]] && echo -n "Checking $(basename "$FILE") ... "
 
-		# try to find $FILE's $FILESIZE in $FILESIZEFILE
-		# if it isn't found, skip hashing because $FILE
-		# must not be something interesting
-		# possible limitaion: fancy filesystems
-		MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
-		
-		if [[ "$MATCHES" > "0" ]]; then
+				# at this point, we are sitting in $t
+				# and $FILE contains the relative path to 
+				# a file somewhere deep down in $t.
 
-			pushd "$THERE" > /dev/null
+				# contains filesize of a file in $t
+				FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
 
-			# contains hash of a file in $THERE
-			HASH=$( eval $HASHFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
-
-			# change to original location
-			popd > /dev/null
-
-			# try to find $FILE's $HASH in $SUMSFILE
-			# and extract seeding file's name if found
-			# use third field to end: second field is a second space
-			# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
-			SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
-
-			# if found, link the files together
-			if [[ -n "$SEEDFILE" ]]; then
-
-				echo -n "yes! "
-
-				# calculate absolute path to $MOVEDFILE
-				# if $THERE starts with a slash, do first thing, else do second
-				[[ "$THERE" == /* ]] && MOVEDFILE="$THERE/$FILE" || MOVEDFILE="$(pwd)/$THERE/$FILE"
-
-				# clean up $MOVEDFILE (probably contains /./ and // in places)
-				MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
-
-				# get into $HERE
-				pushd "$HERE" > /dev/null
-
-				# make sure the directory exists for $SEEDFILE
-				[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
-
-				# link to the $MOVEDFILE with $SEEDFILE
-				ln -s "$MOVEDFILE" "$SEEDFILE"
-
-				# go back to original location
+				# change to original location
 				popd > /dev/null
 
-				echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
+				# try to find $FILE's $FILESIZE in $FILESIZEFILE
+				# if it isn't found, skip hashing because $FILE
+				# must not be something interesting
+				# possible limitaion: fancy filesystems
+				MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
+				
+				if [[ "$MATCHES" > "0" ]]; then
 
-			else
-				echo "no (hash)"
-			fi
+					pushd "$t" > /dev/null
 
-		else
-			echo "no (filesize)"
-		fi
+					# contains hash of a file in $t
+					HASH=$( eval $HASHFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
 
-		# then go back to $THERE
-		pushd "$THERE" > /dev/null
+					# change to original location
+					popd > /dev/null
 
-	done
+					# try to find $FILE's $HASH in $SUMSFILE
+					# and extract seeding file's name if found
+					# use third field to end: second field is a second space
+					# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
+					SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
+
+					# if found, link the files together
+					if [[ -n "$SEEDFILE" ]]; then
+
+						[[ $VERBOSE == true ]] && echo -n "yes! "
+
+						# calculate absolute path to $MOVEDFILE
+						# if $t starts with a slash, do first thing, else do second
+						[[ "$t" == /* ]] && MOVEDFILE="$t/$FILE" || MOVEDFILE="$(pwd)/$t/$FILE"
+
+						# clean up $MOVEDFILE (probably contains /./ and // in places)
+						MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
+
+						# get into $h
+						pushd "$h" > /dev/null
+
+						# make sure the directory exists for $SEEDFILE
+						[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
+
+						# link to the $MOVEDFILE with $SEEDFILE
+						ln -s "$MOVEDFILE" "$SEEDFILE"
+
+						# go back to original location
+						popd > /dev/null
+
+						[[ $VERBOSE == true ]] && echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
+
+					else
+						[[ $VERBOSE == true ]] && echo "no (hash)"
+					fi
+
+				else
+					[[ $VERBOSE == true ]] && echo "no (filesize)"
+				fi
+
+				# then go back to $t
+				pushd "$t" > /dev/null
+
+			done # while
+
+		done # for t in there
+
+	done # for h in here
 
 	# finally, move back to wherever we were before starting
 	popd > /dev/null
 }
 
 main() {
-	## do some error checking first
+	# first parse the command line arguments
+	# loop over all the arguments
+	while [[ $# > 0 ]]; do
+		ARG="$1"
+		shift
 
-	[[ "$COMMAND" != "prework" ]] && [[ "$COMMAND" != "postwork" ]] && [[ "$COMMAND" != "example" ]] \
-	&& echo "Error: Not a valid command" && usage && exit 1
+		case $ARG in 
+			-h|--here)
+				[[ -z "$HERE" ]] && HERE="$1" || HERE="$HERE:$1"
+				shift
+				;;
+			-t|--there)
+				[[ -z "$THERE" ]] && THERE="$1" || THERE="$THERE:$1"
+				shift
+				;;
+			--no-filesize)
+				SKIPFILESIZECHECK=true
+				;;
+			-v|--verbose)
+				VERBOSE=true
+				;;
+			-q|--quiet)
+				VERBOSE=false
+				;;
+			--prework)
+				COMMAND="prework"
+				;;
+			--postwork)
+				COMMAND="postwork"
+				;;
+			--help|--usage)
+				COMMAND="usage"
+				;;
+			*)
+				# unknown
+				;;
+		esac
+	done
 
-	[[ "$COMMAND" != "example" ]] && [[ ! -d "$HERE" ]] \
-	&& echo "Error: Directory $HERE does not exist" && usage && exit 1
+	# do some error checking
 
-	[[ "$COMMAND" == "postwork" ]] && [[ ! -d "$THERE" ]] \
-	&& echo "Error: Directory $THERE does not exist" && usage && exit 1
+	[[ -z "$HERE" ]] && [[ "$COMMAND" == "prework" ]] && [[ "$COMMAND" == "postwork" ]] \
+		&& echo "Error: Need to specify HERE" \
+		&& usage \
+		&& exit 1
 
-	## end of error checking
+	[[ -z "$THERE" ]] && [[ "$COMMAND" == "postwork" ]] \
+		&& echo "Error: Need to specify THERE" \
+		&& usage \
+		&& exit 1
+
+
+	# finally move to the appropriate function
+
 
 	if [[ "$COMMAND" == "prework" ]]; then
 		
@@ -413,14 +305,14 @@ main() {
 		postwork
 
 
-	elif [[ "$COMMAND" == "example" ]]; then
-		
+	else
 
-		example | less
+
+		usage
 
 
 	fi
 }
 
 
-main
+main $@

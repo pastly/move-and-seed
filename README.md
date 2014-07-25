@@ -8,38 +8,33 @@ If you like this and find it useful, consider sending a few bitcents my way: 17w
 
 # USAGE
 
-This script will help you symbolically link files after moving/renaming
-back into the directory you torrenting them into for continued seeding.
-It should be run before you move/rename, and then once again afterwards.
+	This script will help you symbolically link files after moving/renaming 
+	back into the directory you torrenting them into for continued seeding. It
+	should be run before you move/rename, and then once again afterwards.
 
-The inspiration for this script came from torrenting lots of Linux ISOs
-and wanting to continue seeding and supporting them while also 
-reorganizing them elsewhere on the computer.
+	Usage:
+	$0 --prework [ -h|--here PATH ]
+	$0 --postwork [ -h|--here PATH ] [ -t|--there PATH ]
 
-The commands are as follows.
+	--here and --there may be specified many times
 
-	./movenseed.sh example
-	             Prints out a full example of how this script
-	             can be used. It pipes the text through "less"
-	             as there is a lot.
+	All options:
+	--help --usage ..... this text
+	--prework .......... indicate prework stage
+	--postwork ......... indicate postwork stage
+	-h --here .......... any type of path, seeding directory
+	-t --there ......... any type of path, organized directory
+	--no-filesize ...... disable filesize checks in postwork
+	                     may be needed for cross-filesystem work
+	-v --verbose ....... output lots of words (default)
+	-q --quiet   ....... supress everything but warnings
 
-	./movenseed.sh prework <dir>
-				 This should be run before moving.
+# WORD OF WARNING
 
-				 Recursively hashes all the files in <dir>.
-				 A file in <dir> will be created containing
-				 all the hashes. This will take a long time
-				 for large directories!
-
-	./movenseed.sh postwork <dir1> <dir2>
-				 This should be run after moving and can be run
-				 multiple times for multiple <dir2>'s.
-
-				 Here, <dir1> should be the same as <dir> from 
-				 prework. <dir2> should be where things were   
-				 moved. <dir1> can still contain anything you  
-				 didn't want to move and must contain that hash 
-				 file generated in the prework.
+This script uses file sizes as a quick check to see if files are potentially
+the same before moving on to hashing to find out for sure. If you use advanced
+filesystems like zfs or even two different filesystems for --here and --there,
+you may need to specify --no-filesize for postwork.
 
 # EXAMPLE
 
@@ -81,19 +76,19 @@ The download has finished and you have the following directory structure.
 	├── readme.txt
 	└── see-us-at-venue.txt
 
-You need to copy the script to wherever you will be using it. From inside
+You may copy the script to wherever you will be using it. From inside
 `/downloads/free-artist-discography`, you will run
 	
-	./movenseed.sh prework ./
+	./movenseed.sh --prework --here ./
 
 Or from anywhere you will run
 	
-	./movenseed.sh prework /downloads/free-artist-discography
+	./movenseed.sh --prework --here /downloads/free-artist-discography
 
-Once finished (this could take a long time if the albums are very large), a new
-file will be in `/downloads/free-artist-discography` containing a list of all the
-files and their hashes. You are now free to move any of the files and folders 
-to whever you want on the filesystem. 
+Once finished (this could take a long time if the albums are very large), new
+files will be in `/downloads/free-artist-discography` containing a list of all
+the files and their hashes and sizes. You are now free to move any of the files
+and folders to whever you want. 
 
 Let's say you personally like album1 and album2, so you put it in a directory
 to be later synced with your mp3 player. Album3 isn't so good, but your
@@ -145,13 +140,11 @@ moved files to.
 
 From `/downloading/free-artist-discography` you run
 
-	./movenseed.sh postwork ./ /my-music/free-artist
-	./movenseed.sh postwork ./ /public/free-artist
+	./movenseed.sh --postwork --here ./ --there /my-music/free-artist --there /public/free-artist
 
 Or from anywhere you run
 
-	./movenseed.sh postwork /downloading/free-artist-discography /my-music/free-artist
-	./movenseed.sh postwork /downloading/free-artist-discography /public/free-artist
+	./movenseed.sh --postwork --here /downloading/free-artist-discography --there /my-music/free-artist --there /public/free-artist
 
 Inside `/downloading/free-artist-discography` you should now have symbolic links
 pointing towards all those .mp3 files, even though you changed the directory
@@ -185,19 +178,3 @@ structure and even renamed some of them.
 	├── mns.sums
 	├── readme.txt
 	└── see-us-at-venue.txt
-
-### WORD OF WARNING
-
-This script works by matching hashes; therefore, you need to be careful about
-which directories you choose for the post work. You want to get as close to the
-files as possible to avoid having to digest files that aren't related to the
-torrent. Using the above example, if you have lots of other artists in the
-`/my-music` directory, you would not want to use
-	
-	./movenseed.sh /downloading/free-artist-discography /my-music
-
-as it would digest ever single file in `/my-music` and potentially take forever.
-Similarly, if you put the torrented music files in the same directory as
-unrelated files, you will end up digesting the unrelated files. There's nothing
-wrong with this, other than you will have an unavoidable waste of time if there
-is lots of large unrelated files.
