@@ -127,10 +127,12 @@ prework() {
 			[[ $VERBOSE == true ]] && echo "done!"
 		done
 
+		# finally, move back to wherever we were before starting
+		popd > /dev/null
+
 	done
 
-	# finally, move back to wherever we were before starting
-	popd > /dev/null
+	
 }
 
 postwork() {
@@ -147,8 +149,12 @@ postwork() {
 			# the files where sums and filesizes should be stored
 			SUMSFILE="$h/mns.sums"
 			FILESIZEFILE="$h/mns.sizes"
-			[[ ! -f "$SUMSFILE" ]]     && echo "Warning: $h/mns.sums doesn't exist, skipping directory"  && continue
-			[[ ! -f "$FILESIZEFILE" ]] && echo "Warning: $h/mns.sizes doesn't exist, skipping directory" && continue
+			[[ ! -f "$SUMSFILE" ]] \
+				&& echo "Warning: $h/mns.sums doesn't exist, skipping directory"  \
+				&& continue
+			[[ $SKIPFILESIZECHECK == false ]] && [[ ! -f "$FILESIZEFILE" ]] \
+				&& echo "Warning: $h/mns.sizes doesn't exist, skipping directory" \
+				&& continue
 
 			# change to directory where moved files are
 			pushd "$t" > /dev/null
@@ -163,7 +169,7 @@ postwork() {
 				# a file somewhere deep down in $t.
 
 				# contains filesize of a file in $t
-				FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
+				[[ $SKIPFILESIZECHECK == false ]] && FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
 
 				# change to original location
 				popd > /dev/null
@@ -172,9 +178,9 @@ postwork() {
 				# if it isn't found, skip hashing because $FILE
 				# must not be something interesting
 				# possible limitaion: fancy filesystems
-				MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
+				[[ $SKIPFILESIZECHECK == false ]] && MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
 				
-				if [[ "$MATCHES" > "0" ]]; then
+				if [[ $SKIPFILESIZECHECK == true ]] || [[ "$MATCHES" > "0" ]]; then
 
 					pushd "$t" > /dev/null
 
@@ -229,12 +235,14 @@ postwork() {
 
 			done # while
 
+			# finally, move back to wherever we were before starting
+			popd > /dev/null
+
 		done # for t in there
 
 	done # for h in here
 
-	# finally, move back to wherever we were before starting
-	popd > /dev/null
+
 }
 
 main() {
