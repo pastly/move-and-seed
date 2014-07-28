@@ -136,15 +136,16 @@ prework() {
 }
 
 postwork() {
+
 	oldIFS="$IFS"
 	IFS=":"
 	read -a HERE <<< "$HERE"
 	read -a THERE <<< "$THERE"
 	IFS="$oldIFS"
 
-	for h in ${HERE[@]}; do 
+	for h in "${HERE[@]}"; do
 
-		for t in ${THERE[@]}; do
+		for t in "${THERE[@]}"; do
 
 			# the files where sums and filesizes should be stored
 			SUMSFILE="$h/mns.sums"
@@ -323,4 +324,4 @@ main() {
 }
 
 
-main $@
+main "$@"
