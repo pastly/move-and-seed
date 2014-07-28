@@ -90,7 +90,7 @@ prework() {
 	read -a HERE <<< "$HERE"
 	IFS="$oldIFS"
 
-	for h in ${HERE[@]}; do 
+	for h in "${HERE[@]}"; do
 
 		[[ ! -d "$h" ]] \
 			&& echo "Warning: $h is not a directory. Ignoring it and moving on." \
