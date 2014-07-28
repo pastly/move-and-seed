@@ -13,8 +13,8 @@ If you like this and find it useful, consider sending a few bitcents my way: 17w
 	should be run before you move/rename, and then once again afterwards.
 
 	Usage:
-	$0 --prework [ -h|--here PATH ]
-	$0 --postwork [ -h|--here PATH ] [ -t|--there PATH ]
+	movenseed.sh --prework [ -h|--here PATH ]
+	movenseed.sh --postwork [ -h|--here PATH ] [ -t|--there PATH ]
 
 	--here and --there may be specified many times
 
