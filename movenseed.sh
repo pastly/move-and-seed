@@ -179,7 +179,7 @@ postwork() {
 				# if it isn't found, skip hashing because $FILE
 				# must not be something interesting
 				# possible limitaion: fancy filesystems
-				[[ $SKIPFILESIZECHECK == false ]] && MATCHES=$( grep --count $FILESIZE $FILESIZEFILE )
+				[[ $SKIPFILESIZECHECK == false ]] && MATCHES=$( grep --count $FILESIZE "$FILESIZEFILE" )
 				
 				if [[ $SKIPFILESIZECHECK == true ]] || [[ "$MATCHES" > "0" ]]; then
 
