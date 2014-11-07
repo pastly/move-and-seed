@@ -24,11 +24,7 @@
 # command that will be used to hash every file
 # sha1sum would be another good option, but performed
 # slower for me in my cursory tests
-HASHFUNCTION="md5sum" 
-### $HASHFUNCTIONOPTIONS
-#
-# options for the above
-HASHFUNCTIONOPTIONS=""
+HASHFUNCTION="md5sum"
 ### $FILESIZEFUNCTION
 #
 # command that calculates the filesize of the given file
@@ -131,7 +127,7 @@ prework() {
 			$FILESIZEFUNCTION "$FILESIZEFUNCTIONOPTIONS" "$FILE" >> "$FILESIZEFILE"
 
 			[[ $VERBOSE == true ]] && echo -n "hashing $(basename "$FILE") ... "
-			$HASHFUNCTION "$HASHFUNCTIONOPTIONS" "$FILE" >> "$SUMSFILE"
+			$HASHFUNCTION "$FILE" >> "$SUMSFILE"
 			[[ $VERBOSE == true ]] && echo "done!"
 		done
 
@@ -194,7 +190,7 @@ postwork() {
 					pushd "$t" > /dev/null
 
 					# contains hash of a file in $t
-					HASH=$( $HASHFUNCTION "$HASHFUNCTIONOPTIONS" "$FILE" | cut --delimiter=" " --fields="1" )
+					HASH=$( $HASHFUNCTION "$FILE" | cut --delimiter=" " --fields="1" )
 
 					# change to original location
 					popd > /dev/null
