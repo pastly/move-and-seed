@@ -299,7 +299,8 @@ main() {
 
 	# do some error checking
 
-	[[ -z "$HERE" ]] && [[ "$COMMAND" == "prework" ]] && [[ "$COMMAND" == "postwork" ]] \
+	( [[ -z "$HERE" ]] && [[ "$COMMAND" == "prework" ]] ) || \
+	( [[ -z "$HERE" ]] && [[ "$COMMAND" == "postwork" ]] )  \
 		&& echo "Error: Need to specify HERE" \
 		&& usage \
 		&& exit 1
