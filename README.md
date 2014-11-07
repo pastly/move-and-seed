@@ -4,7 +4,7 @@ This is a handy little bash script that allows you to move torrented files aroun
 
 Please report bugs at the [issue tracker](https://bitbucket.org/pointychimp/move-and-seed/issues).
 
-If you like this and find it useful, consider sending a few bitcents my way: 17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7.
+If you like this and find it useful, consider sending a few bitcents my way: [17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7](bitcoin:17wNska6TeMDYeDGzzv26sExXP8FAKHGQ7).
 
 # USAGE
 
@@ -33,8 +33,8 @@ If you like this and find it useful, consider sending a few bitcents my way: 17w
 
 This script uses file sizes as a quick check to see if files are potentially
 the same before moving on to hashing to find out for sure. If you use advanced
-filesystems like zfs or even two different filesystems for --here and --there,
-you may need to specify --no-filesize for postwork.
+filesystems like zfs or even two different filesystems for `--here` and `--there`,
+you may need to specify `--no-filesize` for postwork.
 
 # EXAMPLE
 
@@ -50,28 +50,28 @@ The download has finished and you have the following directory structure.
 
 	/downloads/free-artist-discography
 	├── album1
-	│   ├── cover.jpg
-	│   ├── song1.mp3
-	│   ├── song2.mp3
-	│   ├── song3.mp3
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   ├── song1.mp3
+	│   ├── song2.mp3
+	│   ├── song3.mp3
+	│   └── track-list.txt
 	├── album2
-	│   ├── cover.jpg
-	│   ├── song1.mp3
-	│   ├── song2.mp3
-	│   ├── song3.mp3
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   ├── song1.mp3
+	│   ├── song2.mp3
+	│   ├── song3.mp3
+	│   └── track-list.txt
 	├── album3
-	│   ├── cd1
-	│   │   ├── song1.mp3
-	│   │   ├── song2.mp3
-	│   │   └── song3.mp3
-	│   ├── cd2
-	│   │   ├── song1.mp3
-	│   │   ├── song2.mp3
-	│   │   └── song3.mp3
-	│   ├── cover.jpg
-	│   └── track-list.txt
+	│   ├── cd1
+	│   │   ├── song1.mp3
+	│   │   ├── song2.mp3
+	│   │   └── song3.mp3
+	│   ├── cd2
+	│   │   ├── song1.mp3
+	│   │   ├── song2.mp3
+	│   │   └── song3.mp3
+	│   ├── cover.jpg
+	│   └── track-list.txt
 	├── another-txt-file.txt
 	├── readme.txt
 	└── see-us-at-venue.txt
@@ -101,15 +101,16 @@ You've finished moving things and relevant directories look like this now.
 
 	/downloads/free-artist-discography
 	├── album1
-	│   ├── cover.jpg
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   └── track-list.txt
 	├── album2
-	│   ├── cover.jpg
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   └── track-list.txt
 	├── album3
-	│   ├── cover.jpg
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   └── track-list.txt
 	├── another-txt-file.txt
+	├── mns.sizes
 	├── mns.sums
 	├── readme.txt
 	└── see-us-at-venue.txt
@@ -117,9 +118,9 @@ You've finished moving things and relevant directories look like this now.
 	/my-music
 	└── free-artist
 	    ├── album1 [year]
-	    │   ├── artist-album-song1.mp3
-	    │   ├── artist-album-song2.mp3
-	    │   └── artist-album-song3.mp3
+	    │   ├── artist-album-song1.mp3
+	    │   ├── artist-album-song2.mp3
+	    │   └── artist-album-song3.mp3
 	    └── album2 [year]
 	        ├── artist-album-song1.mp3
 	        ├── artist-album-song2.mp3
@@ -127,9 +128,9 @@ You've finished moving things and relevant directories look like this now.
 
 	/public/free-artist
 	├── album3 disc1
-	│   ├── song1.mp3
-	│   ├── song2.mp3
-	│   └── song3.mp3
+	│   ├── song1.mp3
+	│   ├── song2.mp3
+	│   └── song3.mp3
 	└── album3 disc2
 	    ├── song1.mp3
 	    ├── song2.mp3
@@ -152,29 +153,30 @@ structure and even renamed some of them.
 
 	/downloads/free-artist-discography
 	├── album1
-	│   ├── cover.jpg
-	│   ├── song1.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song1.mp3
-	│   ├── song2.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song2.mp3
-	│   ├── song3.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song3.mp3
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   ├── song1.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song1.mp3
+	│   ├── song2.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song2.mp3
+	│   ├── song3.mp3 -> /my-music/free-artist/album1 [year]/artist-album-song3.mp3
+	│   └── track-list.txt
 	├── album2
-	│   ├── cover.jpg
-	│   ├── song1.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song1.mp3
-	│   ├── song2.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song2.mp3
-	│   ├── song3.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song3.mp3
-	│   └── track-list.txt
+	│   ├── cover.jpg
+	│   ├── song1.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song1.mp3
+	│   ├── song2.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song2.mp3
+	│   ├── song3.mp3 -> /my-music/free-artist/album2 [year]/artist-album-song3.mp3
+	│   └── track-list.txt
 	├── album3
-	│   ├── cd1
-	│   │   ├── song1.mp3 -> /public/free-artist/album3 disc1/song1.mp3
-	│   │   ├── song2.mp3 -> /public/free-artist/album3 disc1/song2.mp3
-	│   │   └── song3.mp3 -> /public/free-artist/album3 disc1/song3.mp3
-	│   ├── cd2
-	│   │   ├── song1.mp3 -> /public/free-artist/album3 disc2/song1.mp3
-	│   │   ├── song2.mp3 -> /public/free-artist/album3 disc2/song2.mp3
-	│   │   └── song3.mp3 -> /public/free-artist/album3 disc2/song3.mp3
-	│   ├── cover.jpg
-	│   └── track-list.txt
+	│   ├── cd1
+	│   │   ├── song1.mp3 -> /public/free-artist/album3 disc1/song1.mp3
+	│   │   ├── song2.mp3 -> /public/free-artist/album3 disc1/song2.mp3
+	│   │   └── song3.mp3 -> /public/free-artist/album3 disc1/song3.mp3
+	│   ├── cd2
+	│   │   ├── song1.mp3 -> /public/free-artist/album3 disc2/song1.mp3
+	│   │   ├── song2.mp3 -> /public/free-artist/album3 disc2/song2.mp3
+	│   │   └── song3.mp3 -> /public/free-artist/album3 disc2/song3.mp3
+	│   ├── cover.jpg
+	│   └── track-list.txt
 	├── another-txt-file.txt
+	├── mns.sizes
 	├── mns.sums
 	├── readme.txt
 	└── see-us-at-venue.txt
