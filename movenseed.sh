@@ -229,6 +229,11 @@ postwork() {
 						# link to the $MOVEDFILE with $SEEDFILE
 						ln -s "$MOVEDFILE" "$SEEDFILE"
 
+						# copy mns.sums and mns.sizes to where $SEEDFILE is
+						# in case they are needed in the future
+						cp $SUMSFILE $(dirname $MOVEDFILE)
+						cp $FILESIZEFILE $(dirname $MOVEDFILE)
+
 						# go back to original location
 						popd > /dev/null
 
