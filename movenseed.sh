@@ -203,11 +203,22 @@ postwork() {
 						[[ $VERBOSE == true ]] && echo -n "yes! "
 
 						# calculate absolute path to $MOVEDFILE
-						# if $t starts with a slash, do first thing, else do second
-						[[ "$t" == /* ]] && MOVEDFILE="$t/$FILE" || MOVEDFILE="$(pwd)/$t/$FILE"
+						if [[ "$t" == /* ]]; then
+							MOVEDFILE="$t/$FILE"
+						else
+							WORKINGPWD=$(pwd)
+							while [[ "$t" == "../"* ]]; do
+								t=$(echo $t | sed 's|\.\./||')
+								WORKINGPWD=$(dirname $(pwd))
+							done
+							t="$WORKINGPWD/$t"
+							MOVEDFILE="$t/$FILE"
+						fi
 
 						# clean up $MOVEDFILE (probably contains /./ and // in places)
-						MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
+						while [[ "$MOVEDFILE" == *"/./"* ]]; do
+							MOVEDFILE=$(echo "$MOVEDFILE" | sed 's|/\.\?/|/|g')
+						done
 
 						# get into $h
 						pushd "$h" > /dev/null
