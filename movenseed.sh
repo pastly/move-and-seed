@@ -25,12 +25,20 @@
 # sha1sum would be another good option, but performed
 # slower for me in my cursory tests
 HASHFUNCTION="md5sum" 
+### $HASHFUNCTIONOPTIONS
+#
+# options for the above
+HASHFUNCTIONOPTIONS=""
 ### $FILESIZEFUNCTION
 #
 # command that calculates the filesize of the given file
 # unknown reliability, I imagine it may cause issues on
 # filesystems with compression and similar things
-FILESIZEFUNCTION="stat --format='%s %n'"
+FILESIZEFUNCTION="stat"
+### $FILESIZEFUNCTIONOPTIONS
+#
+# options for the above
+FILESIZEFUNCTIONOPTIONS="--format='%s %n'"
 ### $COMMAND
 #
 # "prework"       or
@@ -120,10 +128,10 @@ prework() {
 			# $FILE = ./Downloads/movie.mkv (which absolutely is /home/user/Downloads/movie.mkv)
 
 			[[ $VERBOSE == true ]] && echo "finding filesize of $(basename "$FILE")"
-			eval $FILESIZEFUNCTION \"$FILE\" >> "$FILESIZEFILE"
+			$FILESIZEFUNCTION "$FILESIZEFUNCTIONOPTIONS" "$FILE" >> "$FILESIZEFILE"
 
 			[[ $VERBOSE == true ]] && echo -n "hashing $(basename "$FILE") ... "
-			eval $HASHFUNCTION \"$FILE\" >> "$SUMSFILE"
+			$HASHFUNCTION "$HASHFUNCTIONOPTIONS" "$FILE" >> "$SUMSFILE"
 			[[ $VERBOSE == true ]] && echo "done!"
 		done
 
@@ -170,7 +178,7 @@ postwork() {
 				# a file somewhere deep down in $t.
 
 				# contains filesize of a file in $t
-				[[ $SKIPFILESIZECHECK == false ]] && FILESIZE=$( eval $FILESIZEFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
+				[[ $SKIPFILESIZECHECK == false ]] && FILESIZE=$( $FILESIZEFUNCTION "$FILESIZEFUNCTIONOPTIONS" "$FILE" | cut --delimiter=" " --fields="1" )
 
 				# change to original location
 				popd > /dev/null
@@ -186,7 +194,7 @@ postwork() {
 					pushd "$t" > /dev/null
 
 					# contains hash of a file in $t
-					HASH=$( eval $HASHFUNCTION \"$FILE\" | cut --delimiter=" " --fields="1" )
+					HASH=$( $HASHFUNCTION "$HASHFUNCTIONOPTIONS" "$FILE" | cut --delimiter=" " --fields="1" )
 
 					# change to original location
 					popd > /dev/null
