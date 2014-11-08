@@ -90,7 +90,7 @@ usage() {
 
 prework() {
 	oldIFS="$IFS"
-	IFS=":"
+	IFS=$'\n'
 	read -a HERE <<< "$HERE"
 	IFS="$oldIFS"
 
@@ -142,7 +142,7 @@ prework() {
 postwork() {
 
 	oldIFS="$IFS"
-	IFS=":"
+	IFS=$'\n'
 	read -a HERE <<< "$HERE"
 	read -a THERE <<< "$THERE"
 	IFS="$oldIFS"
@@ -275,11 +275,11 @@ main() {
 
 		case $ARG in 
 			-h|--here)
-				[[ -z "$HERE" ]] && HERE="$1" || HERE="$HERE:$1"
+				[[ -z "$HERE" ]] && HERE="$1" || HERE="$HERE\n$1"
 				shift
 				;;
 			-t|--there)
-				[[ -z "$THERE" ]] && THERE="$1" || THERE="$THERE:$1"
+				[[ -z "$THERE" ]] && THERE="$1" || THERE="$THERE\n$1"
 				shift
 				;;
 			--no-filesize)
