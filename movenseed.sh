@@ -34,7 +34,7 @@ FILESIZEFUNCTION="stat"
 ### $FILESIZEFUNCTIONOPTIONS
 #
 # options for the above
-FILESIZEFUNCTIONOPTIONS="--format='%s %n'"
+FILESIZEFUNCTIONOPTIONS="--format=%s %n"
 ### $COMMAND
 #
 # "prework"       or
