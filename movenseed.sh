@@ -235,8 +235,8 @@ postwork() {
 
 						# copy mns.sums and mns.sizes to where $MOVEDFILE is
 						# in case they are needed in the future
-						cp $SUMSFILE $(dirname $MOVEDFILE)
-						cp $FILESIZEFILE $(dirname $MOVEDFILE)
+						cp $SUMSFILE "$(dirname $MOVEDFILE)"
+						cp $FILESIZEFILE "$(dirname $MOVEDFILE)"
 
 						# go back to original location
 						popd > /dev/null
