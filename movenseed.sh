@@ -201,7 +201,7 @@ postwork() {
 					# example: "8e2fd07abb4e987d1362ce880e56024d  ./ubuntu-server-disc.iso"
 					SEEDFILE=$( grep "$HASH" "$SUMSFILE" | cut --delimiter=" " --fields="3-" ) 
 
-					# if found, link the files together
+					# if found, possibly link the files together
 					if [[ -n "$SEEDFILE" ]]; then
 
 						[[ $VERBOSE == true ]] && echo -n "yes! "
@@ -227,21 +227,26 @@ postwork() {
 						# get into $h
 						pushd "$h" > /dev/null
 
-						# make sure the directory exists for $SEEDFILE
-						[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
+						# skip stuff if file already exists
+						if [[ -e "$SEEDFILE" ]]; then
+							[[ $VERBOSE == true ]] && echo "but $(basename "$SEEDFILE") already exists"
+						else
+							# make sure the directory exists for $SEEDFILE
+							[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
 
-						# link to the $MOVEDFILE with $SEEDFILE
-						ln -s "$MOVEDFILE" "$SEEDFILE"
+							# link to the $MOVEDFILE with $SEEDFILE
+							ln -s "$MOVEDFILE" "$SEEDFILE"
 
-						# copy mns.sums and mns.sizes to where $MOVEDFILE is
-						# in case they are needed in the future
-						cp "$SUMSFILE" "$(dirname "$MOVEDFILE")"
-						cp "$FILESIZEFILE" "$(dirname "$MOVEDFILE")"
+							# copy mns.sums and mns.sizes to where $MOVEDFILE is
+							# in case they are needed in the future
+							#cp "$SUMSFILE" "$(dirname "$MOVEDFILE")"
+							#cp "$FILESIZEFILE" "$(dirname "$MOVEDFILE")"
+							[[ $VERBOSE == true ]] && echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
+						fi
 
 						# go back to original location
 						popd > /dev/null
 
-						[[ $VERBOSE == true ]] && echo "$(basename "$SEEDFILE") now points to $(basename "$MOVEDFILE")"
 
 					else
 						[[ $VERBOSE == true ]] && echo "no (hash)"
