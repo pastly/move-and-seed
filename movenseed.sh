@@ -60,6 +60,10 @@ SKIPFILESIZECHECK=false
 #
 # true or false			whether or not to diplay lots of information
 VERBOSE=true
+### $HARDLINK
+#
+# true of false			whether or not to make hard links instead of symbolic links
+HARDLINK=false
 
 ############# start of script #############
 
@@ -83,6 +87,8 @@ usage() {
 	-t --there ......... any type of path, organized directory
 	--no-filesize ...... disable filesize checks in postwork
 	                     may be needed for cross-filesystem work
+	--hard ............. make hard links instead of soft (symbolic)
+	--soft ............. make soft (symbolic) links (default)
 	-v --verbose ....... output lots of words (default)
 	-q --quiet   ....... supress everything but warnings
 	endofHEREdocument
@@ -135,6 +141,8 @@ prework() {
 		popd > /dev/null
 
 	done
+
+	IFS="$oldIFS"
 
 	
 }
@@ -235,7 +243,9 @@ postwork() {
 							[[ ! -d $(dirname "$SEEDFILE") ]] && mkdir -p "$(dirname "$SEEDFILE")"
 
 							# link to the $MOVEDFILE with $SEEDFILE
-							ln -s "$MOVEDFILE" "$SEEDFILE"
+							[[ $HARDLINK == true ]] \
+								&& ln    "$MOVEDFILE" "$SEEDFILE" \
+								|| ln -s "$MOVEDFILE" "$SEEDFILE"
 
 							# copy mns.sums and mns.sizes to where $MOVEDFILE is
 							# in case they are needed in the future
@@ -289,6 +299,12 @@ main() {
 				;;
 			--no-filesize)
 				SKIPFILESIZECHECK=true
+				;;
+			--hard)
+				HARDLINK=true
+				;;
+			--soft)
+				HARDLINK=false
 				;;
 			-v|--verbose)
 				VERBOSE=true
